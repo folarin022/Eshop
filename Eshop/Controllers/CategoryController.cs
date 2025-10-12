@@ -31,22 +31,34 @@ namespace Eshop.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateCategory([FromBody] Data.Category category, CancellationToken cancellationToken)
+        public async Task<IActionResult> CreateCategory([FromBody]Data.Category category, CancellationToken cancellationToken)
         {
             await _categoryService.CreateCategory(category, cancellationToken);
             return Ok("Category created successfully.");
         }
 
-        [HttpGet("{id:guid}")]
-        public async Task<IActionResult> GetCategory(Guid id, CancellationToken cancellationToken)
+        [HttpGet("Category:{id:guid}")]
+        public async Task<IActionResult> GetCategoryById(Guid id, CancellationToken cancellationToken)
         {
             var response = await _categoryService.GetCategoryById(id, cancellationToken);
 
-            if (!response.IsSuccess)
-                return NotFound(response); 
-
-            return Ok(response);
+            if (response == null)
+            {
+                return NotFound(new
+                {
+                    message = $"Product with ID {id} was not found."
+                });
+            }
+            else
+            {
+                return Ok(response);
+            }
         }
+        //public async Task<IActionResult> GetAllCategories()
+        //{
+        //    var response = await _categoryService.GetAllCategories();
+        //    return Ok(response);
+        //}   
 
 
 

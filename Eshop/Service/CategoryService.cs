@@ -4,6 +4,7 @@ using Eshop.Dto.CategoryModel;
 using Eshop.Repositries.Interface;
 using Eshop.Service.Inteterface;
 using Microsoft.AspNetCore.Routing.Tree;
+using Microsoft.EntityFrameworkCore;
 
 namespace Eshop.Service
 {
@@ -70,6 +71,13 @@ namespace Eshop.Service
                 return BaseResponse<CategoryDto>.FailResponse("An error occurred while retrieving category");
             }
         }
+
+        public async Task<List<Category>> GetAllCategories()
+        {
+            var categories = await categoryRepository.GetAllCategory();
+            return categories;
+        }
+
 
 
 

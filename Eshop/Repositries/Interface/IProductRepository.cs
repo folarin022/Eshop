@@ -7,7 +7,7 @@ namespace Eshop.Repositries.Interface
     {
         Task<List<Product>> GetAllProduct(CancellationToken cancellationToken);
         Task<Product> GetProductByID(Guid id, CancellationToken cancellationToken);
-        Task<bool> AddProduct(Product product, CancellationToken cancellationToken);
+        Task<bool> AddProduct(CreateProductDto request);
         Task UpdateProduct(Product Product, CancellationToken cancellationToken);
         Task<bool> DeleteProduct(Guid id, CancellationToken cancellationToken);
     }

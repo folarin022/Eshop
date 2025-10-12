@@ -2,6 +2,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Eshop.Data;
+using Eshop.Dto;
 using Eshop.Dto.ProductModel;
 using Eshop.Service;
 using Eshop.Service.Inteterface;
@@ -23,31 +25,43 @@ namespace Eshop.Controllers
 
 
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] Data.Product product, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpdateProduct(Guid id, [FromRoute] Data.Product product, CancellationToken cancellationToken)
         {
             if (id != product.Id)
                 return BadRequest("ID in route and product object do not match.");
 
             await _productService.UpdateProduct(product, cancellationToken);
-            return Ok("Category updated successfully.");
+            return Ok("Product updated successfully.");
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddProduct([FromBody] CreateProductDto request)
+        public IActionResult CreateProduct([FromBody] CreateProductDto product)
         {
-           if (request == null)
+            var newProduct = _productService.AddProduct(product); 
+            return Ok(new BaseResponse<bool>
             {
-                return BadRequest("Product cannot be empty");
-            }
+                IsSuccess = true,
+                Data = newProduct, 
+                Message = "Product created successfully"
+            });
+        }
+ 
+        [HttpGet("{id:Guid}")]
+        public async Task<IActionResult> GetProductById([FromRoute] Guid id)
+        {
+            var response = await _productService.GetProductById(id);
 
-           var response = await _productService.AddProduct(request);
-
-            if (!response.IsSuccess)
+            if (response == null)
             {
-                return BadRequest(response.Message);
+                return NotFound(new
+                {
+                    message = $"Product with ID {id} was not found."
+                });
             }
-            return Ok(response);
-
+            else
+            {
+                return Ok(response);
+            }
         }
 
         [HttpDelete("{id:guid}")]

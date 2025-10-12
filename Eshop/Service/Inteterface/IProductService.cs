@@ -9,6 +9,7 @@ namespace Eshop.Service.Inteterface
     {
         Task<BaseResponse<bool>> AddProduct(CreateProductDto request);
         //Task CreateProduct(Product product, CancellationToken cancellationToken);
+        Task<BaseResponse<bool>> GetProductById(Guid id);
         Task<BaseResponse<bool>> UpdateProduct(Data.Product product, CancellationToken cancellationToken);
         //Task UpdateProduct(Product product, CancellationToken cancellationToken);
         Task<BaseResponse<bool>> DeleteProduct(Guid id, CancellationToken cancellationToken);

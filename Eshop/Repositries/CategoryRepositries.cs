@@ -19,9 +19,9 @@ namespace Eshop.Repositries
             return await dbContext.SaveChangesAsync(cancellationToken) > 0;
         }
 
-        public async Task<List<Category>> GetAllCategory(CancellationToken cancellationToken)
+        public async Task<List<Category>> GetAllCategory()
         {
-            return await dbContext.Categories.ToListAsync(cancellationToken);
+            return await dbContext.Categories.ToListAsync();
 
         }
 

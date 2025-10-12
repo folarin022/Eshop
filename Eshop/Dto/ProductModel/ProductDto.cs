@@ -1,4 +1,5 @@
-﻿namespace Eshop.Dto.ProductModel
+﻿
+namespace Eshop.Dto.ProductModel
 {
     public class ProductDto
     {
@@ -10,5 +11,15 @@
         public DateTime? ExpiryDate { get; set; }
         public DateTime DateCreated { get; set; }
         public int StockQuantity { get; set; }
+
+        public static implicit operator ProductDto(Task<BaseResponse<ProductDto>> v)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static implicit operator ProductDto(bool v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

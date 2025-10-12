@@ -7,7 +7,7 @@ using Eshop.Service.Inteterface;
 
 namespace Eshop.Service
 {
-    public class _ProductService(IProductRepository productRepository, ILogger<_ProductService> logger) : IProductService
+    public class ProductService(IProductRepository productRepository, ILogger<ProductService> logger) : IProductService
     {
         public async Task<BaseResponse<bool>> AddProduct(CreateProductDto request)
         {
@@ -37,6 +37,30 @@ namespace Eshop.Service
                 {
                     IsSuccess = false,
                     Message = "An error occurred while adding the category",
+                    Data = false
+                };
+            }
+        }
+        public async Task<BaseResponse<bool>> GetProductById(Guid id)
+        {
+            try
+            {
+                await productRepository.GetProductByID(id, CancellationToken.None);
+                return new BaseResponse<bool>
+                {
+                    IsSuccess = true,
+                    Message = "Product retrieved successfully",
+
+                    Data = true
+                };
+
+            }
+            catch
+            {
+                return new BaseResponse<bool>
+                {
+                    IsSuccess = false,
+                    Message = "An error occurred while retrieving the category",
                     Data = false
                 };
             }

@@ -9,6 +9,7 @@ namespace Eshop.Service.Inteterface
     {
         Task<BaseResponse<bool>> CreateCategory(Data.Category category, CancellationToken cancellationToken);
         Task<BaseResponse<CategoryDto>> GetCategoryById(Guid id, CancellationToken cancellationToken);
+        Task<List<Category>> GetAllCategories();
         Task<BaseResponse<bool>> UpdateCategory(Data.Category category, CancellationToken cancellationToken);
         Task<BaseResponse<bool>> DeleteCategory(Guid id, CancellationToken cancellationToken);
         //Task CreateCategory(Category category, CancellationToken cancellationToken);

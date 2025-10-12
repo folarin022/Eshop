@@ -1,5 +1,6 @@
 ﻿using Eshop.Context;
 using Eshop.Data;
+using Eshop.Dto.ProductModel;
 using Eshop.Repositries.Interface;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,9 +8,9 @@ namespace Eshop.Repositries
 {
     public class ProductRepositries(ApplicationDbContext dbContext) : IProductRepository
     {
-        public async Task<bool> AddProduct(Product Product, CancellationToken cancellationToken)
+        public async Task<bool> AddProduct(CreateProductDto request)
         {
-            await dbContext.AddAsync(Product, cancellationToken);
+            await dbContext.AddAsync(request);
             return await dbContext.SaveChangesAsync() > 0 ? true : false;
         }
 
