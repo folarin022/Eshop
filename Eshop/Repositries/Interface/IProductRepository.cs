@@ -10,6 +10,8 @@ namespace Eshop.Repositries.Interface
         Task<bool> AddProduct(CreateProductDto request);
         Task UpdateProduct(Product Product, CancellationToken cancellationToken);
         Task<bool> DeleteProduct(Guid id, CancellationToken cancellationToken);
+        Task AddAsync(Product product, CancellationToken cancellationToken = default);
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }
 

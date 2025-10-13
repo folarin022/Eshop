@@ -20,7 +20,7 @@ namespace Eshop.Controllers
 
 
 
-        [HttpPut("{id:guid}")]
+        [HttpPut]
         public async Task<IActionResult> UpdateCategory(Guid id, [FromBody] Data.Category category, CancellationToken cancellationToken)
         {
             if (id != category.Id)

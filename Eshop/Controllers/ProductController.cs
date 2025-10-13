@@ -28,24 +28,36 @@ namespace Eshop.Controllers
         public async Task<IActionResult> UpdateProduct(Guid id, [FromRoute] Data.Product product, CancellationToken cancellationToken)
         {
             if (id != product.Id)
-                return BadRequest("ID in route and product object do not match.");
-
-            await _productService.UpdateProduct(product, cancellationToken);
-            return Ok("Product updated successfully.");
-        }
-
-        [HttpPost]
-        public IActionResult CreateProduct([FromBody] CreateProductDto product)
-        {
-            var newProduct = _productService.AddProduct(product); 
-            return Ok(new BaseResponse<bool>
             {
-                IsSuccess = true,
-                Data = newProduct, 
-                Message = "Product created successfully"
-            });
+                return BadRequest("ID in route and product object do not match.");
+            }
+            else
+            {
+                await _productService.UpdateProduct(product, cancellationToken);
+                return Ok("Product updated successfully.");
+            }
         }
- 
+
+        
+            [HttpPost]
+            public async Task<IActionResult> CreateProduct([FromBody] CreateProductDto product)
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(new BaseResponse<bool>
+                    {
+                        IsSuccess = false,
+                        Message = "Invalid product data"
+                    });
+
+                var response = await _productService.AddProduct(product);
+
+                if (!response.IsSuccess)
+                    return BadRequest(response);
+
+                return Ok(response);
+            }
+
+
         [HttpGet("{id:Guid}")]
         public async Task<IActionResult> GetProductById([FromRoute] Guid id)
         {

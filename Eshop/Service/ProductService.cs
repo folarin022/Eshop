@@ -1,46 +1,62 @@
-﻿using Eshop.Data;
+﻿using Eshop.Context;
+using Eshop.Data;
 using Eshop.Dto;
 using Eshop.Dto.CategoryModel;
 using Eshop.Dto.ProductModel;
+using Eshop.Repositries;
 using Eshop.Repositries.Interface;
 using Eshop.Service.Inteterface;
+using Microsoft.EntityFrameworkCore;
 
 namespace Eshop.Service
 {
-    public class ProductService(IProductRepository productRepository, ILogger<ProductService> logger) : IProductService
+    public class ProductService : IProductService
     {
+        private readonly IProductRepository productRepository;
+        private readonly ILogger<ProductService> logger;
+        private readonly ApplicationDbContext dbContext;
+
+        public ProductService(IProductRepository productRepository, ILogger<ProductService> logger, ApplicationDbContext dbContext)
+        {
+            this.productRepository = productRepository;
+            this.logger = logger;
+            this.dbContext = dbContext;
+        }
+
         public async Task<BaseResponse<bool>> AddProduct(CreateProductDto request)
         {
+            var response = new BaseResponse<bool>();
+
             try
             {
-                var isAdded = await productRepository.AddProduct(request);
-                if (!isAdded)
+                var product = new Product
                 {
-                    return new BaseResponse<bool>
-                    {
-                        IsSuccess = false,
-                        Message = "Failed to add category",
-                        Data = false
-                    };
-                }
-                return new BaseResponse<bool>
-                {
-                    IsSuccess = true,
-                    Message = "Category added successfully",
-                    Data = true
+                    Id = Guid.NewGuid(),
+                    Name = request.Name,
+                    Description = request.Description,
+                    Price = request.price,
+                    CategoryId = request.CategoryId
                 };
+
+                await productRepository.AddAsync(product);
+                await productRepository.SaveChangesAsync();
+
+                response.IsSuccess = true; 
+                response.Data = true;
+                response.Message = "Product created successfully";
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error occurred while adding category");
-                return new BaseResponse<bool>
-                {
-                    IsSuccess = false,
-                    Message = "An error occurred while adding the category",
-                    Data = false
-                };
+                response.IsSuccess = false;
+                response.Data = false;
+                response.Message = $"Error creating product: {ex.Message}";
             }
+
+            return response;
         }
+
+
+
         public async Task<BaseResponse<bool>> GetProductById(Guid id)
         {
             try

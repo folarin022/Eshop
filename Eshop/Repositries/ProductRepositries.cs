@@ -36,5 +36,24 @@ namespace Eshop.Repositries
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
+        public async Task AddAsync(Product product, CancellationToken cancellationToken = default)
+        {
+            await dbContext.Products.AddAsync(product, cancellationToken);
+        }
+
+        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            return await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        //public async Task AddAsync(Product product, CancellationToken cancellationToken = default)
+        //{
+        //    await dbContext.Products.AddAsync(product, cancellationToken);
+        //}
+
+        //public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        //{
+        //    return await dbContext.SaveChangesAsync(cancellationToken);
+        //}
     }
 }
