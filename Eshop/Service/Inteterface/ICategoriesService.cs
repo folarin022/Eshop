@@ -5,12 +5,12 @@ using Eshop.Dto.CategoryModel;
 
 namespace Eshop.Service.Inteterface
 {
-    public interface ICategoryService
+    public interface ICategoriesService
     {
-        Task<BaseResponse<bool>> CreateCategory(Data.Category category, CancellationToken cancellationToken);
+        Task<BaseResponse<bool>> CreateCategory(CreateCategoryDto request, CancellationToken cancellationToken);
         Task<BaseResponse<CategoryDto>> GetCategoryById(Guid id, CancellationToken cancellationToken);
-        Task<List<Category>> GetAllCategories();
-        Task<BaseResponse<bool>> UpdateCategory(Data.Category category, CancellationToken cancellationToken);
+        Task<List<Categories>> GetAllCategories();
+        Task<BaseResponse<bool>> UpdateCategory(Guid id,UpdateCategoryDto request ,CancellationToken cancellationToken);
         Task<BaseResponse<bool>> DeleteCategory(Guid id, CancellationToken cancellationToken);
         //Task CreateCategory(Category category, CancellationToken cancellationToken);
         //Task UpdateCategory(Category category, CancellationToken cancellationToken);

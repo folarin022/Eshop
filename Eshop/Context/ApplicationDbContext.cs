@@ -9,9 +9,11 @@ namespace Eshop.Context
         {
         }
 
-        public DbSet<Product> Products { get; set; }
-        public DbSet<Category> Categories { get; set; }
-        
+        public DbSet<Products> Products { get; set; }
+        public DbSet<Categories> Categories { get; set; }
+        public DbSet<Users> Users { get; set; }
+        public DbSet<Roles> Roles { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -3,10 +3,10 @@ using Eshop.Data;
 using Eshop.Dto.ProductModel;
 using Eshop.Repositries.Interface;
 using Microsoft.EntityFrameworkCore;
-
+using System;
 namespace Eshop.Repositries
 {
-    public class ProductRepositries(ApplicationDbContext dbContext) : IProductRepository
+    public class ProductsRepositries(ApplicationDbContext dbContext) : IProductsRepository
     {
         public async Task<bool> AddProduct(CreateProductDto request)
         {
@@ -16,27 +16,31 @@ namespace Eshop.Repositries
 
         public async Task<bool> DeleteProduct(Guid id, CancellationToken cancellationToken)
         {
-            dbContext.Remove(id);
+            var product = await dbContext.Products.FindAsync(new object[] { id }, cancellationToken);
+            if (product == null)
+                return false;
+            dbContext.Products.Remove(product);
             return await dbContext.SaveChangesAsync(cancellationToken) > 0;
         }
 
-        public async Task<List<Product>> GetAllProduct(CancellationToken cancellationToken)
+        public async Task<List<Products>> GetAllProduct()
         {
-            return await dbContext.Products.ToListAsync(cancellationToken);
+            return await dbContext.Products.ToListAsync();
         }
 
-        public async Task<Product> GetProductByID(Guid id, CancellationToken cancellationToken)
+        public async Task<Products> GetProductByID(Guid id, CancellationToken cancellationToken)
         {
             return await dbContext.Products.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
         }
 
-        public async Task UpdateProduct(Product Product, CancellationToken cancellationToken)
+        public async Task<bool> UpdateProduct(Products product, CancellationToken cancellationToken)
         {
-            dbContext.Products.Update(Product);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            dbContext.Products.Update(product);
+            return await dbContext.SaveChangesAsync(cancellationToken) > 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         ;
+            
         }
 
-        public async Task AddAsync(Product product, CancellationToken cancellationToken = default)
+        public async Task AddAsync(Products product, CancellationToken cancellationToken = default)
         {
             await dbContext.Products.AddAsync(product, cancellationToken);
         }

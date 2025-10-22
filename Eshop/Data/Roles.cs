@@ -2,7 +2,8 @@
 {
     public class Roles : BaseEntity
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
+        public Guid RoleId { get; set; }
+        public Guid UserId { get; set; }
+        public string RoleName { get; set; } = string.Empty;
     }
 }

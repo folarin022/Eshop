@@ -10,32 +10,34 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Eshop.Service
 {
-    public class ProductService : IProductService
+    public class ProductsService : IProductsService
     {
-        private readonly IProductRepository productRepository;
-        private readonly ILogger<ProductService> logger;
+        private readonly IProductsRepository productRepository;
+        private readonly ILogger<ProductsService> logger;
         private readonly ApplicationDbContext dbContext;
 
-        public ProductService(IProductRepository productRepository, ILogger<ProductService> logger, ApplicationDbContext dbContext)
+        public ProductsService(IProductsRepository productRepository, ILogger<ProductsService> logger, ApplicationDbContext dbContext)
         {
             this.productRepository = productRepository;
             this.logger = logger;
             this.dbContext = dbContext;
         }
 
-        public async Task<BaseResponse<bool>> AddProduct(CreateProductDto request)
+        public async Task<BaseResponse<bool>> AddProduct(CreateProductDto request, CancellationToken cancellationToken)
         {
             var response = new BaseResponse<bool>();
 
             try
             {
-                var product = new Product
+                var product = new Products
                 {
-                    Id = Guid.NewGuid(),
                     Name = request.Name,
                     Description = request.Description,
                     Price = request.price,
-                    CategoryId = request.CategoryId
+                    CostPrice = request.CostPrice,
+                    StockQuantity = request.StockQuantity,
+
+
                 };
 
                 await productRepository.AddAsync(product);
@@ -57,7 +59,7 @@ namespace Eshop.Service
 
 
 
-        public async Task<BaseResponse<bool>> GetProductById(Guid id)
+        public async Task<BaseResponse<bool>> GetProductById(Guid id, CancellationToken cancellationToken)
         {
             try
             {
@@ -81,29 +83,48 @@ namespace Eshop.Service
                 };
             }
         }
-        public async Task<BaseResponse<bool>> UpdateProduct(Product product, CancellationToken cancellationToken)
+        public async Task<BaseResponse<bool>> UpdateProduct(Guid id, UpdateProductDto request, CancellationToken cancellationToken)
         {
+            var response = new BaseResponse<bool>();
+
             try
             {
-                await productRepository.UpdateProduct(product, cancellationToken);
-                return new BaseResponse<bool>
+               
+                var product = await productRepository.GetProductByID(id, cancellationToken);
+
+                if (product == null)
                 {
-                    IsSuccess = true,
-                    Message = "Category updated successfully",
-                    Data = true
-                };
+                    response.IsSuccess = false;
+                    response.Data = false;
+                    response.Message = "Product not found";
+                    return response;
+                }
+
+                product.Name = request.Name;
+                product.Description = request.Description;
+                product.Price = request.Price;
+                product.StockQuantity = request.StockQuantity;
+
+                
+                var isUpdated = await productRepository.UpdateProduct(product, cancellationToken);
+
+                response.IsSuccess = isUpdated;
+                response.Data = isUpdated;
+                response.Message = isUpdated
+                    ? "Product updated successfully"
+                    : "Failed to update product";
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error occurred while updating category");
-                return new BaseResponse<bool>
-                {
-                    IsSuccess = false,
-                    Message = "An error occurred while updating the category",
-                    Data = false
-                };
+                response.IsSuccess = false;
+                response.Data = false;
+                response.Message = $"Error updating product: {ex.Message}";
             }
+
+            return response;
         }
+
+
         public async Task<BaseResponse<bool>> DeleteProduct(Guid id, CancellationToken cancellationToken)
         {
             try
@@ -114,27 +135,33 @@ namespace Eshop.Service
                     return new BaseResponse<bool>
                     {
                         IsSuccess = false,
-                        Message = "Failed to delete category",
+                        Message = "Failed to delete Product",
                         Data = false
                     };
                 }
                 return new BaseResponse<bool>
                 {
                     IsSuccess = true,
-                    Message = "Category deleted successfully",
+                    Message = "Product deleted successfully",
                     Data = true
                 };
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error occurred while deleting category");
+                logger.LogError(ex, "Error occurred while deleting product");
                 return new BaseResponse<bool>
                 {
                     IsSuccess = false,
-                    Message = "An error occurred while deleting the category",
+                    Message = "An error occurred while deleting the product",
                     Data = false
                 };
             }
+        }
+
+        public async Task<List<Products>> GetAllProduct()
+        {
+            var product = await productRepository.GetAllProduct();
+            return product;
         }
     }
 }
