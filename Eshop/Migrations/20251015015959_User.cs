@@ -54,8 +54,8 @@ namespace Eshop.Migrations
             migrationBuilder.DropTable(
                 name: "Roles");
 
-            migrationBuilder.DropTable(
-                name: "User");
+            //migrationBuilder.DropTable(
+            //    name: "User");
         }
     }
 }

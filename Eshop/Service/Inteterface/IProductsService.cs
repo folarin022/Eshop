@@ -10,7 +10,7 @@ namespace Eshop.Service.Inteterface
        
         Task<BaseResponse<bool>> AddProduct(CreateProductDto request, CancellationToken cancellationToken);
 
-        Task<BaseResponse<bool>> GetProductById(Guid id, CancellationToken cancellationToken);
+        Task<BaseResponse<Products>> GetProductById(Guid id, CancellationToken cancellationToken);
 
         Task<BaseResponse<bool>> UpdateProduct(Guid id,  UpdateProductDto request,CancellationToken cancellationToken);
         Task<List<Products>> GetAllProduct();

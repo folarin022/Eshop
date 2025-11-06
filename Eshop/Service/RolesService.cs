@@ -2,71 +2,87 @@
 using Eshop.Data;
 using Eshop.Dto;
 using Eshop.Dto.RoleModel;
-using Eshop.Migrations;
-using Eshop.Repositries.Interface;
 using Eshop.Service.Inteterface;
 using Microsoft.EntityFrameworkCore;
 
 namespace Eshop.Service
 {
-    public class RolesService(IRoleRepository roleRepository, ILogger<RolesService> logger, ApplicationDbContext dbContext) : IRolesService
+    public class RolesService : IRolesService
     {
-        private readonly IRoleRepository roleRepository = roleRepository;
-        private readonly ApplicationDbContext dbContext;
-        private readonly ILogger<RolesService> logger;
+        private readonly ApplicationDbContext _dbContext;
 
-        //public RoleService(ApplicationDbContext dbContext, ILogger<RoleService> logger)
-        //{
-        //    this.dbContext = dbContext;
-        //    this.logger = logger;
-        //}
-
-        public async Task<BaseResponse<bool>> AssignRolesToUser(CreateRoleDto request, CancellationToken cancellationToken)
+        public RolesService(ApplicationDbContext dbContext)
         {
-            var response = new BaseResponse<bool>();
-            try
-            {
-                var role = new Data.Roles
-                {
-                    RoleName = request.RoleName
-                };
-
-
-                await roleRepository.AssignRoleToUser( request, cancellationToken);
-                await roleRepository.AddAsync(request);
-                await roleRepository.SaveChangesAsync();
-
-                response.IsSuccess = true;
-                response.Data = true;
-                response.Message = "Role Assignd successful";
-            }
-            catch (Exception ex) 
-            {
-                response.IsSuccess = false;
-                response.Data = false;
-                response.Message = $"Error Assigning roles: {ex.Message}";
-            }
-            return response;
+            _dbContext = dbContext;
         }
 
         public async Task<BaseResponse<List<Roles>>> GetAllRoles(CancellationToken cancellationToken)
         {
-            var response = new BaseResponse<List<Roles>>();
-            try
+            var roles = await _dbContext.Roles
+                .Select(r => new Roles  
+                {
+                    Id = r.Id,
+                    RoleName = r.RoleName
+                })
+                .ToListAsync(cancellationToken);
+
+            return new BaseResponse<List<Roles>>
             {
-                var roles = await dbContext.Roles.ToListAsync(cancellationToken);
-                response.IsSuccess = true;
-                response.Data = roles;
-                response.Message = "Roles retrieved successfully";
-            }
-            catch (Exception ex)
+                IsSuccess = true,
+                Message = "Roles retrieved successfully.",
+                Data = roles
+            };
+        }
+
+        public async Task<BaseResponse<bool>> AssignRolesToUser(Guid userId, CreateRoleDto request, CancellationToken cancellationToken)
+        {
+            var user = await _dbContext.Users
+                .Include(u => u.UserRoles)
+                .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+
+            if (user == null)
             {
-                logger.LogError(ex, "Error retrieving roles");
-                response.IsSuccess = false;
-                response.Message = $"Error retrieving roles: {ex.Message}";
+                return new BaseResponse<bool>
+                {
+                    IsSuccess = false,
+                    Message = "User not found"
+                };
             }
-            return response;
+
+            var role = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == request.RoleName, cancellationToken);
+            if (role == null)
+            {
+                return new BaseResponse<bool>
+                {
+                    IsSuccess = false,
+                    Message = "Role not found"
+                };
+            }
+
+
+            if (user.UserRoles.Any(ur => ur.RoleId == role.Id))
+            {
+                return new BaseResponse<bool>
+                {
+                    IsSuccess = false,
+                    Message = "User already has this role"
+                };
+            }
+
+            user.UserRoles.Add(new UserRole
+            {
+                UserId = user.Id,
+                RoleId = role.Id
+            });
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return new BaseResponse<bool>
+            {
+                IsSuccess = true,
+                Message = "Role assigned successfully.",
+                Data = true
+            };
         }
     }
 }
-

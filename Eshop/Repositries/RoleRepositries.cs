@@ -20,7 +20,7 @@ namespace Eshop.Repositries
 
         }
 
-        public async Task<bool> AssignRoleToUser( CreateRoleDto request, CancellationToken cancellationToken)
+        public async Task<bool> AssignRoleToUser(Users user, CreateRoleDto request)
         {
             await dbContext.AddAsync(request);
             return await dbContext.SaveChangesAsync() > 0;

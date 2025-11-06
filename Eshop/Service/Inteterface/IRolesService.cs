@@ -1,12 +1,13 @@
-﻿using Eshop.Data;
+﻿using Eshop.Dto.RoleModel;
 using Eshop.Dto;
-using Eshop.Dto.RoleModel;
+using System.Threading;
+using Eshop.Data;
 
 namespace Eshop.Service.Inteterface
 {
     public interface IRolesService
     {
         Task<BaseResponse<List<Roles>>> GetAllRoles(CancellationToken cancellationToken);
-        Task<BaseResponse<bool>> AssignRolesToUser(CreateRoleDto request,CancellationToken cancellationToken);
+        Task<BaseResponse<bool>> AssignRolesToUser(Guid userId, CreateRoleDto request, CancellationToken cancellationToken);
     }
 }

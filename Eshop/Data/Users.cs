@@ -9,7 +9,7 @@ namespace Eshop.Data
         public string FirstName { get; set; } = string.Empty;
         public string Lastname { get; set; } = string.Empty;
         public string? OtherName { get; set; }
-        //public Roles roles { get; set; }
+        public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
         public string Email { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
         public string Address { get; set; }
