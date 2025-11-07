@@ -22,7 +22,7 @@ namespace Eshop.Service
                 .Select(r => new Roles  
                 {
                     Id = r.Id,
-                    RoleName = r.RoleName
+                    UserRoles = r.UserRoles
                 })
                 .ToListAsync(cancellationToken);
 
@@ -49,7 +49,9 @@ namespace Eshop.Service
                 };
             }
 
-            var role = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == request.RoleName, cancellationToken);
+            var role = await _dbContext.Roles
+                .FirstOrDefaultAsync(r => r.RoleName == request.RoleName, cancellationToken);
+
             if (role == null)
             {
                 return new BaseResponse<bool>
@@ -58,8 +60,6 @@ namespace Eshop.Service
                     Message = "Role not found"
                 };
             }
-
-
             if (user.UserRoles.Any(ur => ur.RoleId == role.Id))
             {
                 return new BaseResponse<bool>
@@ -84,5 +84,6 @@ namespace Eshop.Service
                 Data = true
             };
         }
+
     }
 }

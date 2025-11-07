@@ -33,7 +33,7 @@ namespace Eshop.Context
 
             modelBuilder.Entity<UserRole>()
                 .HasOne(ur => ur.Roles)
-                .WithMany(r => r.RoleName)
+                .WithMany(r => r.UserRoles)
                 .HasForeignKey(ur => ur.RoleId)
                 .OnDelete(DeleteBehavior.Cascade);
 
