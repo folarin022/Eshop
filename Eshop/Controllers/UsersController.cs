@@ -4,6 +4,7 @@ using Eshop.Dto;
 using Eshop.Dto.UserModel;
 using Eshop.Service;
 using Eshop.Service.Inteterface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 
 namespace Eshop.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -21,7 +23,8 @@ namespace Eshop.Controllers
         {
             _userService = userService;
         }
-
+        [Authorize(Roles ="Admin")]
+        [Consumes("multipart/form-data")]
         [HttpPost("Create")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDto user,CancellationToken cancellationToken)
         {
@@ -31,7 +34,7 @@ namespace Eshop.Controllers
             return Ok(response);
         }
 
-
+        [Consumes("multipart/form-data")]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetUserById(Guid id, CancellationToken cancellationToken)
         {
@@ -43,6 +46,8 @@ namespace Eshop.Controllers
             return Ok(response);
         }
 
+
+        [Consumes("multipart/form-data")]
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
         {
@@ -54,6 +59,9 @@ namespace Eshop.Controllers
             return Ok(response);
         }
 
+
+        [Authorize(Roles = "Admin")]
+        [Consumes("multipart/form-data")]
         [HttpPut("Update/{id:guid}")]
         public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserDto user, CancellationToken cancellationToken)
         {
@@ -65,6 +73,9 @@ namespace Eshop.Controllers
             return Ok(response);
         }
 
+
+        [Authorize(Roles = "Admin")]
+        [Consumes("multipart/form-data")]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteUser(Guid id, CancellationToken cancellationToken)
         {

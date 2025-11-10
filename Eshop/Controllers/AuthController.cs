@@ -18,7 +18,6 @@ namespace EssenceShop.Controllers
         {
             _authService = authService;
         }
-
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserDto request,CancellationToken cancellationToken)
         {
@@ -27,6 +26,7 @@ namespace EssenceShop.Controllers
                 return BadRequest(result);
             return Ok(result);
         }
+
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginUserDto request,CancellationToken cancellationToken)

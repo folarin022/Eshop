@@ -8,15 +8,6 @@ namespace Eshop.Dto.CategoryModel
         public Guid CategoryId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; } = string.Empty;
-    
-     public static implicit operator CategoryDto(Task<BaseResponse<ProductDto>> v)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static implicit operator CategoryDto(bool v)
-        {
-            throw new NotImplementedException();
-        }
+     
     }
 }

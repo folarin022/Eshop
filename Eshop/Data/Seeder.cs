@@ -15,8 +15,8 @@ namespace Eshop.Seeders
             {
                 var roles = new List<Roles>
                 {
-                    new Roles { RoleName = "Admin" },
-                    new Roles { RoleName = "User" }
+                    new Roles { Role = "Admin" },
+                    new Roles { Role = "User" }
                 };
 
                 await context.Roles.AddRangeAsync(roles);
@@ -32,13 +32,14 @@ namespace Eshop.Seeders
                     Email = "admin@example.com",
                     UserName = "Admin",
                     Password = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+                    Role = "Admin"
                 };
 
                 await context.Auths.AddAsync(admin);
                 await context.SaveChangesAsync();
 
 
-                var adminRole = await context.Roles.FirstAsync(r => r.RoleName == "Admin");
+                var adminRole = await context.Roles.FirstAsync(r => r.Role == "Admin");
                 var userRole = new UserRole
                 {
                     UserId = admin.Id,

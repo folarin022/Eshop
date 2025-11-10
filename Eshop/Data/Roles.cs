@@ -4,7 +4,7 @@
     {
         public Guid RoleId { get; set; }
         public Guid UserId { get; set; }
-        public string RoleName { get; set; }
+        public string Role { get; set; }
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     }
 }

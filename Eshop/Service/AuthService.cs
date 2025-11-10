@@ -54,7 +54,7 @@ namespace Eshop.Service
                     return response;
                 }
 
-                var roles = user.UserRoles.Select(ur => ur.Roles.RoleName).ToList();
+                var roles = user.UserRoles.Select(ur => ur.Roles.Role).ToList();
 
                 var accessToken = _jwtService.GenerateToken(user.UserName, roles);
                 var refreshToken = GenerateRefreshToken();
@@ -137,7 +137,7 @@ namespace Eshop.Service
                 await _dbContext.SaveChangesAsync(cancellationToken);
 
                 // Assign default role "User"
-                var userRoleEntity = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "User", cancellationToken);
+                var userRoleEntity = await _dbContext.Roles.FirstOrDefaultAsync(r => r.Role == "User", cancellationToken);
                 if (userRoleEntity != null)
                 {
                     var userRole = new UserRole

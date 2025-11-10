@@ -2,12 +2,14 @@
 using Eshop.Dto.ProductModel;
 using Eshop.Service;
 using Eshop.Service.Inteterface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 
 namespace Eshop.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CategoriesController : ControllerBase
@@ -18,7 +20,8 @@ namespace Eshop.Controllers
         {
             _categoriesService = categoryService;
         }
-
+        [Authorize(Roles = "Admin")]
+        [Consumes("multipart/form-data")]
         [HttpPut("update/{id:guid}")]
         public async Task<IActionResult> UpdateCategory([FromRoute] Guid id, [FromBody] UpdateCategoryDto categoryDto,CancellationToken cancellationToken)
         {
@@ -26,6 +29,8 @@ namespace Eshop.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "Admin")]
+        [Consumes("multipart/form-data")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryDto request, CancellationToken cancellationToken)
         {
@@ -35,6 +40,7 @@ namespace Eshop.Controllers
             return Ok(response);
         }
 
+        [Consumes("multipart/form-data")]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetCategoryById([FromRoute] Guid id,CancellationToken cancellationToken)
         {
@@ -53,6 +59,7 @@ namespace Eshop.Controllers
             }
         }
 
+        [Consumes("multipart/form-data")]
         [HttpGet("categories")]
         public async Task<IActionResult> GetAllCategories()
         {
@@ -60,6 +67,8 @@ namespace Eshop.Controllers
             return Ok(response);
         }
 
+        [Authorize(Roles = "Admin")]
+        [Consumes("multipart/form-data")]
         [HttpDelete("delete/{id:guid}")]
         public async Task<IActionResult> DeleteCategory([FromRoute] Guid id, CancellationToken cancellationToken)
         {

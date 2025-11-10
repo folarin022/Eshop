@@ -50,7 +50,7 @@ namespace Eshop.Service
             }
 
             var role = await _dbContext.Roles
-                .FirstOrDefaultAsync(r => r.RoleName == request.RoleName, cancellationToken);
+                .FirstOrDefaultAsync(r => r.Role == request.RoleName, cancellationToken);
 
             if (role == null)
             {
