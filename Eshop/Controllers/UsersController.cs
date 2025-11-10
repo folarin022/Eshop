@@ -23,10 +23,12 @@ namespace Eshop.Controllers
         }
 
         [HttpPost("Create")]
-        public async Task<IActionResult> CreateUser([FromBody] CreateUserDto user, CancellationToken cancellationToken)
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserDto user,CancellationToken cancellationToken)
         {
-            await _userService.AddUser(user, cancellationToken);
-            return Ok("User created successfully.");
+            var response = await _userService.AddUser(user, cancellationToken);
+            if (!response.IsSuccess)
+                return BadRequest(response);
+            return Ok(response);
         }
 
 
@@ -42,7 +44,7 @@ namespace Eshop.Controllers
         }
 
         [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAllUsers([FromRoute] CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
         {
             var response = await _userService.GetAllUser(cancellationToken);
 
@@ -55,25 +57,23 @@ namespace Eshop.Controllers
         [HttpPut("Update/{id:guid}")]
         public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserDto user, CancellationToken cancellationToken)
         {
-            
-
             var response = await _userService.UpdateUser(id, user, cancellationToken);
 
             if (!response.IsSuccess)
                 return BadRequest(response);
 
-            return Ok("User updated successfully.");
+            return Ok(response);
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteUser(Guid id, CancellationToken cancellationToken)
         {
-            var response = await _userService.DeleteUser(id, cancellationToken);
+            var response = await _userService.DeleteUser(id,cancellationToken);
 
             if (!response.IsSuccess)
                 return BadRequest(response);
 
-            return Ok("User deleted successfully.");
+            return Ok(response);
         }
     }
 }

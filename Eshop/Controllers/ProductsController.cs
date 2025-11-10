@@ -1,11 +1,11 @@
-﻿using Eshop.Dto;
-using Eshop.Dto.ProductModel;
-using Eshop.Service;
+﻿using Eshop.Dto.ProductModel;
 using Eshop.Service.Inteterface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Eshop.Controllers 
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductsController : ControllerBase
@@ -18,39 +18,34 @@ namespace Eshop.Controllers
         }
 
 
-
-        [HttpPut("update{id:guid}")]
-        public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] UpdateProductDto productDto, CancellationToken cancellationToken)
+        [Authorize(Roles = "Admin")]
+        [HttpPut("update/{id:guid}")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateProduct([FromRoute] Guid id, [FromForm] UpdateProductDto productDto, CancellationToken cancellationToken)
         {
             var result = await _productService.UpdateProduct(id, productDto, cancellationToken);
             return Ok(result);
         }
 
 
-
+        [Authorize(Roles = "Admin")]
         [HttpPost("create")]
-            public async Task<IActionResult> CreateProduct([FromBody] CreateProductDto product, CancellationToken cancellationToken)
-            {
-                if (!ModelState.IsValid)
-                    return BadRequest(new BaseResponse<bool>
-                    {
-                        IsSuccess = false,
-                        Message = "Invalid product data"
-                    });
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CreateProduct([FromForm] CreateProductDto request, CancellationToken cancellationToken)
+        {
+            var response = await _productService.AddProduct(request, cancellationToken);
+            if (!response.IsSuccess)
+                return BadRequest(response);
 
-                var response = await _productService.AddProduct(product, cancellationToken);
-
-                if (!response.IsSuccess)
-                    return BadRequest(response);
-
-                return Ok(response);
-            }
+            return Ok(response);
+        }
 
 
-        [HttpGet("get-by-id{id:guid}")]
+        [Authorize]
+        [HttpGet("get-by-id/{id:guid}")]
         public async Task<IActionResult> GetProductById([FromRoute] Guid id, CancellationToken cancellationToken)
         {
-            var response = await _productService.GetProductById(id, cancellationToken);
+            var response = await _productService.GetProductById(id, HttpContext.RequestAborted);
 
             if (response == null)
             {
@@ -65,19 +60,20 @@ namespace Eshop.Controllers
             }
         }
 
-        [HttpGet("get-all  ")]
-        public async Task<IActionResult> GetAllCategories()
+        [Authorize]
+        [HttpGet("get-all")]
+        public async Task<IActionResult> GetAllProducts()
         {
             var response = await _productService.GetAllProduct();
             return Ok(response);
         }
 
-
-        [HttpDelete("delete{id:guid}")]
-        public async Task<IActionResult> DeleteProdct(Guid id, CancellationToken cancellationToken)
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("delete/{id:guid}")]
+        public async Task<IActionResult> DeleteProduct([FromRoute] Guid id, CancellationToken cancellationToken )
         {
-            await _productService.DeleteProduct(id, cancellationToken);
-            return Ok("Category deleted successfully.");
+            var response = await _productService.DeleteProduct(id, HttpContext.RequestAborted);
+            return Ok(response);
         }
     }
 }

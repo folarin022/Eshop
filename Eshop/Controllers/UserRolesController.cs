@@ -2,6 +2,7 @@
 using Eshop.Dto.RoleModel;
 using Eshop.Service.Inteterface;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading;
 
 namespace Eshop.Controllers
 {
@@ -24,12 +25,11 @@ namespace Eshop.Controllers
         }
 
         [HttpPost("assign/{userId:guid}")]
-        public async Task<IActionResult> AssignRoleToUser(
-            [FromRoute] Guid userId,
-            [FromBody] CreateRoleDto request,
-            CancellationToken cancellationToken)
+        public async Task<IActionResult> AssignRoleToUser([FromRoute] Guid userId,CreateRoleDto request, CancellationToken cancellationToken)
+            
+
         {
-            var result = await _roleService.AssignRolesToUser(userId, request, cancellationToken);
+            var result = await _roleService.AssignRolesToUser(userId, request,cancellationToken);
             return Ok(result);
         }
     }

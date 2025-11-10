@@ -1,6 +1,5 @@
 ﻿using Eshop.Data;
 using Eshop.Dto.RoleModel;
-using Eshop.Migrations;
 
 namespace Eshop.Repositries.Interface
 {

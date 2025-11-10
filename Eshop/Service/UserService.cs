@@ -3,7 +3,6 @@ using Eshop.Data;
 using Eshop.Dto;
 using Eshop.Dto.ProductModel;
 using Eshop.Dto.UserModel;
-using Eshop.Migrations;
 using Eshop.Repositries.Interface;
 using Eshop.Service.Inteterface;
 using Users = Eshop.Data.Users;

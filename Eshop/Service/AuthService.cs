@@ -2,11 +2,11 @@
 using Eshop.Data;
 using Eshop.Dto;
 using Eshop.Dto.AuthModel;
-using Eshop.Repositries;
-using Eshop.Repositries.Interface;
 using Eshop.Service.Inteterface;
+using EssenceShop.Models;
 using EssenceShop.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -14,11 +14,9 @@ namespace Eshop.Service
 {
     public class AuthService : IAuthService
     {
-        private readonly IAuthRepository _authRepository;
-        private readonly ILogger<AuthService> _logger;
-        private readonly JwtService _jwtService;
         private readonly ApplicationDbContext _dbContext;
-
+        private readonly JwtService _jwtService;
+        private readonly ILogger<AuthService> _logger;
         private readonly string _hmacKey = "ThisIsASecretKeyForHMAC";
 
         public AuthService(ApplicationDbContext dbContext, JwtService jwtService, ILogger<AuthService> logger)
@@ -28,39 +26,61 @@ namespace Eshop.Service
             _logger = logger;
         }
 
-        public async Task<BaseResponse<string>> LoginClients(LoginUserDto request, CancellationToken cancellationToken)
+        public async Task<BaseResponse<TokenResponse>> LoginClients(LoginUserDto request, CancellationToken cancellationToken)
         {
-            var response = new BaseResponse<string>();
+            var response = new BaseResponse<TokenResponse>();
 
             try
             {
-                var client = await _dbContext.Auths.FirstOrDefaultAsync(a => a.UserName == request.Username, cancellationToken);
-                if (client == null)
+                var user = await _dbContext.Auths
+                    .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Roles)
+                    .FirstOrDefaultAsync(u => u.UserName == request.Username, cancellationToken);
+
+                if (user == null)
                 {
                     response.IsSuccess = false;
-                    response.Message = "Clients not found.";
+                    response.Message = "User not found.";
                     return response;
                 }
 
-                if (!VerifyPassword(request.Password, client.Password))
+
+                bool isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.Password);
+
+                if (!isPasswordValid)
                 {
                     response.IsSuccess = false;
                     response.Message = "Invalid password.";
                     return response;
                 }
 
-                var token = _jwtService.GenerateToken(client.UserName, client.Role);
-                _logger.LogInformation("Admin '{Username}' logged in successfully.", client.UserName);
+                var roles = user.UserRoles.Select(ur => ur.Roles.RoleName).ToList();
+
+                var accessToken = _jwtService.GenerateToken(user.UserName, roles);
+                var refreshToken = GenerateRefreshToken();
+
+                user.RefreshToken = refreshToken;
+                user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
+                await _dbContext.SaveChangesAsync(cancellationToken);
+
+                _logger.LogInformation("User '{Username}' logged in successfully.", user.UserName);
 
                 response.IsSuccess = true;
                 response.Message = "Login successful.";
-                response.Data = token;
+                response.Data = new TokenResponse
+                {
+                    AccessToken = accessToken,
+                    ExpiresAt = DateTime.Now.AddHours(2),
+                    RefreshToken = refreshToken,
+                    RefreshTokenExpiryDate = DateTime.Now.AddDays(7)
+                };
+
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error logging in clients");
-                return new BaseResponse<string>
+                _logger.LogError(ex, "Error logging in user");
+                return new BaseResponse<TokenResponse>
                 {
                     IsSuccess = false,
                     Message = $"Error: {ex.Message}",
@@ -86,7 +106,7 @@ namespace Eshop.Service
                 if (await _dbContext.Auths.AnyAsync(a => a.UserName == request.Username, cancellationToken))
                 {
                     response.IsSuccess = false;
-                    response.Message = "Clients already exists.";
+                    response.Message = "User already exists.";
                     return response;
                 }
 
@@ -104,30 +124,41 @@ namespace Eshop.Service
                     return response;
                 }
 
-                using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_hmacKey));
-                var passwordHash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password)));
+                var passwordHash = HashPassword(request.Password);
 
                 var auth = new Auth
                 {
                     UserName = request.Username,
-                    Password = passwordHash,
                     Email = request.Email,
-                    Role = "Clients"
+                    Password = passwordHash
                 };
 
-                _dbContext.Auths.Add(auth);
+                await _dbContext.Auths.AddAsync(auth, cancellationToken);
                 await _dbContext.SaveChangesAsync(cancellationToken);
 
-                _logger.LogInformation("New admin '{Username}' registered successfully at {Time}", request.Username, DateTime.UtcNow);
+                // Assign default role "User"
+                var userRoleEntity = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "User", cancellationToken);
+                if (userRoleEntity != null)
+                {
+                    var userRole = new UserRole
+                    {
+                        UserId = auth.Id,
+                        RoleId = userRoleEntity.Id
+                    };
+                    await _dbContext.UserRoles.AddAsync(userRole, cancellationToken);
+                    await _dbContext.SaveChangesAsync(cancellationToken);
+                }
+
+                _logger.LogInformation("New user '{Username}' registered successfully.", request.Username);
 
                 response.IsSuccess = true;
-                response.Message = "Clients registered successfully!";
+                response.Message = "User registered successfully!";
                 response.Data = true;
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error registering clients");
+                _logger.LogError(ex, "Error registering user");
                 return new BaseResponse<bool>
                 {
                     IsSuccess = false,
@@ -136,10 +167,6 @@ namespace Eshop.Service
                 };
             }
         }
-
-
-
-
 
         private bool VerifyPassword(string password, string storedHash)
         {
@@ -151,11 +178,17 @@ namespace Eshop.Service
         private string HashPassword(string password)
         {
             using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_hmacKey));
-            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(hash);
+            return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(password)));
         }
 
+        private string GenerateRefreshToken()
+        {
+            var randomBytes = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomBytes);
+                return Convert.ToBase64String(randomBytes);
+            }
+        }
     }
 }
-
-

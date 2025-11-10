@@ -8,12 +8,12 @@ namespace Eshop.Service.Inteterface
     public interface IProductsService
     {
        
-        Task<BaseResponse<bool>> AddProduct(CreateProductDto request, CancellationToken cancellationToken);
+        Task<BaseResponse<Products>> AddProduct(CreateProductDto request, CancellationToken cancellationToken);
 
         Task<BaseResponse<Products>> GetProductById(Guid id, CancellationToken cancellationToken);
 
         Task<BaseResponse<bool>> UpdateProduct(Guid id,  UpdateProductDto request,CancellationToken cancellationToken);
-        Task<List<Products>> GetAllProduct();
+        Task<BaseResponse<List<Products>>> GetAllProduct();
 
         Task<BaseResponse<bool>> DeleteProduct(Guid id, CancellationToken cancellationToken);
         //Task<BaseResponse<bool>> UpdateProduct(Guid id, object request);

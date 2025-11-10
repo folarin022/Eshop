@@ -34,6 +34,12 @@ namespace Eshop.Migrations
                     b.Property<string>("Password")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Role")
                         .HasColumnType("nvarchar(max)");
 
@@ -74,9 +80,6 @@ namespace Eshop.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<decimal>("CostPrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -86,8 +89,8 @@ namespace Eshop.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("ExpiryDate")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -102,8 +105,6 @@ namespace Eshop.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
                 });
@@ -151,9 +152,14 @@ namespace Eshop.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid?>("UsersId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("UserId", "RoleId");
 
                     b.HasIndex("RoleId");
+
+                    b.HasIndex("UsersId");
 
                     b.ToTable("UserRoles", (string)null);
                 });
@@ -199,17 +205,6 @@ namespace Eshop.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("Eshop.Data.Products", b =>
-                {
-                    b.HasOne("Eshop.Data.Categories", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-                });
-
             modelBuilder.Entity("Eshop.Data.UserRole", b =>
                 {
                     b.HasOne("Eshop.Data.Roles", "Roles")
@@ -218,15 +213,24 @@ namespace Eshop.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Eshop.Data.Users", "User")
+                    b.HasOne("Eshop.Data.Auth", "User")
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Eshop.Data.Users", null)
+                        .WithMany("UserRoles")
+                        .HasForeignKey("UsersId");
+
                     b.Navigation("Roles");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Eshop.Data.Auth", b =>
+                {
+                    b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("Eshop.Data.Roles", b =>

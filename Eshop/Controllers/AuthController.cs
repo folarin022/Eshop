@@ -1,5 +1,9 @@
-﻿using EssenceShop.Models;
+﻿using Eshop.Dto.AuthModel;
+using Eshop.Service;
+using Eshop.Service.Inteterface;
+using EssenceShop.Models;
 using EssenceShop.Services;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EssenceShop.Controllers
@@ -8,29 +12,29 @@ namespace EssenceShop.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly JwtService _jwtService;
+        private readonly IAuthService _authService;
 
-        public AuthController(JwtService jwtService)
+        public AuthController(IAuthService authService)
         {
-            _jwtService = jwtService;
+            _authService = authService;
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterUserDto request,CancellationToken cancellationToken)
+        {
+            var result = await _authService.RegisterUser(request,cancellationToken);
+            if (!result.IsSuccess)
+                return BadRequest(result);
+            return Ok(result);
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginUserDto request,CancellationToken cancellationToken)
         {
-            if (request.Username == "folarin" && request.Password == "12345")
-            {
-                var token = _jwtService.GenerateToken( request.Username, "Admin");
-                return Ok(token);
-            }
-
-            return Unauthorized("Invalid username or password");
+            var result = await _authService.LoginClients(request, cancellationToken);
+            if (!result.IsSuccess) return Unauthorized(result);
+            return Ok(result);
         }
     }
 
-    public class LoginRequest
-    {
-        public string Username { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-    }
 }

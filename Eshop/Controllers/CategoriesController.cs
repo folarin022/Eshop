@@ -4,7 +4,6 @@ using Eshop.Service;
 using Eshop.Service.Inteterface;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Eshop.Controllers
@@ -18,29 +17,28 @@ namespace Eshop.Controllers
         public CategoriesController(ICategoriesService categoryService)
         {
             _categoriesService = categoryService;
-        }    
+        }
 
-
-
-        [HttpPut("update")]
-        public async Task<IActionResult> UpdateCategory(Guid id, [FromRoute] UpdateCategoryDto categoryDto, CancellationToken cancellationToken)
+        [HttpPut("update/{id:guid}")]
+        public async Task<IActionResult> UpdateCategory([FromRoute] Guid id, [FromBody] UpdateCategoryDto categoryDto,CancellationToken cancellationToken)
         {
             var result = await _categoriesService.UpdateCategory(id, categoryDto, cancellationToken);
             return Ok(result);
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateCategory(CreateCategoryDto request, CancellationToken cancellationToken)
+        public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryDto request, CancellationToken cancellationToken)
         {
-            await _categoriesService.CreateCategory(request, cancellationToken);
-            return Ok("Category created successfully.");
+            var response = await _categoriesService.CreateCategory(request,cancellationToken);
+            if (!response.IsSuccess)
+                return BadRequest(response);
+            return Ok(response);
         }
 
         [HttpGet("{id:guid}")]
-
-        public async Task<IActionResult> GetCategoryById(Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetCategoryById([FromRoute] Guid id,CancellationToken cancellationToken)
         {
-            var response = await _categoriesService.GetCategoryById(id, cancellationToken);
+            var response = await _categoriesService.GetCategoryById(id,cancellationToken);
 
             if (response == null)
             {
@@ -62,14 +60,11 @@ namespace Eshop.Controllers
             return Ok(response);
         }
 
-
-
-        [HttpDelete("delete{id:guid}")]
-        public async Task<IActionResult> DeleteCategory(Guid id, CancellationToken cancellationToken)
+        [HttpDelete("delete/{id:guid}")]
+        public async Task<IActionResult> DeleteCategory([FromRoute] Guid id, CancellationToken cancellationToken)
         {
-            await _categoriesService.DeleteCategory(id, cancellationToken);
-
-            return Ok("Category deleted successfully.");
+            var response = await _categoriesService.DeleteCategory(id, cancellationToken);
+            return Ok(response);
         }
     }
 }
